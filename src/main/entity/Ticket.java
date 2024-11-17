@@ -17,10 +17,9 @@ public class Ticket extends AbstractTicket {
   private double maxBackpackWeight;
   private double price;
   private long createdAt;
-  private String startDate; // Added to store the start date
-  private String ticketType; // Added to store the ticket type
+  private String startDate;
+  private String ticketType;
 
-  // Full constructor
   public Ticket(int ticketID, String hall, int code, long eventTime, boolean promoStatus,
                 char sector, double backpackWeight, double ticketPrice) {
     setId(ticketID);
@@ -35,7 +34,6 @@ public class Ticket extends AbstractTicket {
     checkNullableFields();
   }
 
-  // Constructor for File Reading (simplified)
   public Ticket(String hall, String ticketType, String startDate, double ticketPrice) {
     this.concertHall = hall;
     this.ticketType = ticketType;
@@ -44,18 +42,17 @@ public class Ticket extends AbstractTicket {
     this.createdAt = System.currentTimeMillis();
   }
 
-  // Constructor to resolve your issue
   public Ticket(String hall, int code, long eventTime) {
     this.concertHall = hall;
     this.eventCode = code;
     this.time = eventTime;
     this.createdAt = System.currentTimeMillis();
-    this.isPromo = false; // Default value
-    this.stadiumSector = 'A'; // Default value
-    this.maxBackpackWeight = 0.0; // Default value
-    this.price = 0.0; // Default value
-    this.ticketType = "MONTH"; // Default ticket type for compatibility
-    this.startDate = ""; // Default empty startDate
+    this.isPromo = false;
+    this.stadiumSector = 'A';
+    this.maxBackpackWeight = 0.0;
+    this.price = 0.0;
+    this.ticketType = "MONTH";
+    this.startDate = "";
   }
 
   private void checkNullableFields() {
@@ -74,7 +71,6 @@ public class Ticket extends AbstractTicket {
     }
   }
 
-  // Getters for validation
   public String getStartDate() {
     return startDate;
   }
