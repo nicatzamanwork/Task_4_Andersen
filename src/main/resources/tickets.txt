@@ -1,0 +1,4 @@
+MainHall,DAY,2023-12-01,100
+SideHall,WEEK,2023-11-01,50
+ConcertHall,MONTH,2023-10-15,0
+SpecialHall,YEAR,2025-01-01,200
