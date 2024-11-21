@@ -8,13 +8,26 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TicketService {
+
+    private static final String START_DATE = "startDate";
+    private static final String PRICE = "price";
+    private static final String TICKET_TYPE = "ticketType";
+
+    private enum TicketType {
+        DAY, WEEK, MONTH, YEAR;
+
+        public static boolean isValidType(String type) {
+            try {
+                TicketType.valueOf(type);
+                return true;
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
+        }
+    }
 
     public void print(Ticket ticket) {
         System.out.println(ticket.toString());
@@ -47,63 +60,99 @@ public class TicketService {
     public void validateTickets(List<Ticket> tickets) {
         int totalTickets = tickets.size();
         int validTickets = 0;
-        Map<String, Integer> violationCounts = new HashMap<>();
-        violationCounts.put("startDate", 0);
-        violationCounts.put("price", 0);
-        violationCounts.put("ticketType", 0);
+        Map<String, Integer> violationCounts = initializeViolationCounts();
 
-        Date today = new Date();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         for (Ticket ticket : tickets) {
-            boolean isValid = true;
-            List<String> violations = new ArrayList<>();
+            boolean isValid = validateTicket(ticket, violationCounts, formatter);
 
-            if (!List.of("DAY", "WEEK", "MONTH", "YEAR").contains(ticket.getTicketType())) {
-                isValid = false;
-                violations.add("ticketType");
-                violationCounts.put("ticketType", violationCounts.get("ticketType") + 1);
-            }
-
-            if (ticket.getStartDate() != null && !ticket.getStartDate().isEmpty()) {
-                try {
-                    LocalDate startDate = LocalDate.parse(ticket.getStartDate(), formatter);
-                    if (startDate.isAfter(LocalDate.now())) {
-                        isValid = false;
-                        violations.add("startDate (in future)");
-                        violationCounts.put("startDate", violationCounts.get("startDate") + 1);
-                    }
-                } catch (DateTimeParseException e) {
-                    isValid = false;
-                    violations.add("startDate (invalid format)");
-                    violationCounts.put("startDate", violationCounts.get("startDate") + 1);
-                }
-            } else {
-                isValid = false;
-                violations.add("startDate (missing)");
-                violationCounts.put("startDate", violationCounts.get("startDate") + 1);
-            }
-
-            if (ticket.getPrice() <= 0) {
-                isValid = false;
-                violations.add("price");
-                violationCounts.put("price", violationCounts.get("price") + 1);
-            }
-
-            if (ticket.getPrice() % 2 != 0) {
-                isValid = false;
-                violations.add("price (not even)");
-                violationCounts.put("price", violationCounts.get("price") + 1);
-            }
-
-            if (!isValid) {
-                System.out.println("Invalid ticket: " + ticket);
-                System.out.println("Violations: " + violations);
-            } else {
+            if (isValid) {
                 validTickets++;
             }
         }
 
+        printValidationSummary(tickets.size(), validTickets, violationCounts);
+    }
+
+    private Map<String, Integer> initializeViolationCounts() {
+        Map<String, Integer> violationCounts = new HashMap<>();
+        violationCounts.put(START_DATE, 0);
+        violationCounts.put(PRICE, 0);
+        violationCounts.put(TICKET_TYPE, 0);
+        return violationCounts;
+    }
+
+    private boolean validateTicket(Ticket ticket, Map<String, Integer> violationCounts, DateTimeFormatter formatter) {
+        boolean isValid = true;
+        List<String> violations = new ArrayList<>();
+
+        if (!TicketType.isValidType(ticket.getTicketType())) {
+            isValid = false;
+            violations.add(TICKET_TYPE);
+            incrementViolationCount(violationCounts, TICKET_TYPE);
+        }
+
+        if (!validateStartDate(ticket.getStartDate(), formatter, violations, violationCounts)) {
+            isValid = false;
+        }
+
+        if (!validatePrice(ticket.getPrice(), violations, violationCounts)) {
+            isValid = false;
+        }
+
+        if (!isValid) {
+            System.out.println("Invalid ticket: " + ticket);
+            System.out.println("Violations: " + violations);
+        }
+
+        return isValid;
+    }
+
+    private boolean validateStartDate(String startDate, DateTimeFormatter formatter, List<String> violations, Map<String, Integer> violationCounts) {
+        if (startDate != null && !startDate.isEmpty()) {
+            try {
+                LocalDate parsedDate = LocalDate.parse(startDate, formatter);
+                if (parsedDate.isAfter(LocalDate.now())) {
+                    violations.add(START_DATE + " (in future)");
+                    incrementViolationCount(violationCounts, START_DATE);
+                    return false;
+                }
+            } catch (DateTimeParseException e) {
+                violations.add(START_DATE + " (invalid format)");
+                incrementViolationCount(violationCounts, START_DATE);
+                return false;
+            }
+        } else {
+            violations.add(START_DATE + " (missing)");
+            incrementViolationCount(violationCounts, START_DATE);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean validatePrice(double price, List<String> violations, Map<String, Integer> violationCounts) {
+        boolean isValid = true;
+        if (price <= 0) {
+            violations.add(PRICE);
+            incrementViolationCount(violationCounts, PRICE);
+            isValid = false;
+        }
+
+        if (price % 2 != 0) {
+            violations.add(PRICE + " (not even)");
+            incrementViolationCount(violationCounts, PRICE);
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void incrementViolationCount(Map<String, Integer> violationCounts, String violationType) {
+        violationCounts.put(violationType, violationCounts.get(violationType) + 1);
+    }
+
+    private void printValidationSummary(int totalTickets, int validTickets, Map<String, Integer> violationCounts) {
         String mostCommonViolation = violationCounts.entrySet().stream()
                 .max(Map.Entry.comparingByValue())
                 .get()

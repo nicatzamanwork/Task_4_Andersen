@@ -1,9 +1,9 @@
 package main.entity;
 
 import main.entity.abstracts.AbstractTicket;
+import main.util.NullableFieldValidator;
 import main.util.NullableWarning;
 
-import java.lang.reflect.Field;
 import java.util.Objects;
 
 public class Ticket extends AbstractTicket {
@@ -23,15 +23,15 @@ public class Ticket extends AbstractTicket {
   public Ticket(int ticketID, String hall, int code, long eventTime, boolean promoStatus,
                 char sector, double backpackWeight, double ticketPrice) {
     setId(ticketID);
-    concertHall = hall;
-    eventCode = code;
-    time = eventTime;
-    isPromo = promoStatus;
-    stadiumSector = sector;
-    maxBackpackWeight = backpackWeight;
-    price = ticketPrice;
-    createdAt = System.currentTimeMillis();
-    checkNullableFields();
+    this.concertHall = hall;
+    this.eventCode = code;
+    this.time = eventTime;
+    this.isPromo = promoStatus;
+    this.stadiumSector = sector;
+    this.maxBackpackWeight = backpackWeight;
+    this.price = ticketPrice;
+    this.createdAt = System.currentTimeMillis();
+    NullableFieldValidator.validate(this);
   }
 
   public Ticket(String hall, String ticketType, String startDate, double ticketPrice) {
@@ -40,6 +40,7 @@ public class Ticket extends AbstractTicket {
     this.startDate = startDate;
     this.price = ticketPrice;
     this.createdAt = System.currentTimeMillis();
+    NullableFieldValidator.validate(this);
   }
 
   public Ticket(String hall, int code, long eventTime) {
@@ -53,22 +54,7 @@ public class Ticket extends AbstractTicket {
     this.price = 0.0;
     this.ticketType = "MONTH";
     this.startDate = "";
-  }
-
-  private void checkNullableFields() {
-    for (Field field : this.getClass().getDeclaredFields()) {
-      if (field.isAnnotationPresent(NullableWarning.class)) {
-        try {
-          field.setAccessible(true);
-          Object value = field.get(this);
-          if (value == null) {
-            throw new RuntimeException("VARIABLE IS NULL");
-          }
-        } catch (IllegalAccessException e) {
-          e.printStackTrace();
-        }
-      }
-    }
+    NullableFieldValidator.validate(this); // Call the utility class
   }
 
   public String getStartDate() {
@@ -84,10 +70,16 @@ public class Ticket extends AbstractTicket {
   }
 
   public void setTime(long time) {
+    if (time <= 0) {
+      throw new IllegalArgumentException("Time must be positive");
+    }
     this.time = time;
   }
 
   public void setStadiumSector(char stadiumSector) {
+    if (!Character.isLetter(stadiumSector)) {
+      throw new IllegalArgumentException("Stadium sector must be a letter");
+    }
     this.stadiumSector = stadiumSector;
   }
 
@@ -96,17 +88,27 @@ public class Ticket extends AbstractTicket {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Ticket ticket = (Ticket) o;
-    return eventCode == ticket.eventCode && time == ticket.time && isPromo == ticket.isPromo && stadiumSector == ticket.stadiumSector && Double.compare(maxBackpackWeight, ticket.maxBackpackWeight) == 0 && Double.compare(price, ticket.price) == 0 && createdAt == ticket.createdAt && Objects.equals(concertHall, ticket.concertHall);
+    return eventCode == ticket.eventCode &&
+            time == ticket.time &&
+            isPromo == ticket.isPromo &&
+            stadiumSector == ticket.stadiumSector &&
+            Double.compare(maxBackpackWeight, ticket.maxBackpackWeight) == 0 &&
+            Double.compare(price, ticket.price) == 0 &&
+            createdAt == ticket.createdAt &&
+            Objects.equals(concertHall, ticket.concertHall) &&
+            Objects.equals(startDate, ticket.startDate) &&
+            Objects.equals(ticketType, ticket.ticketType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(concertHall, eventCode, time, isPromo, stadiumSector, maxBackpackWeight, price, createdAt);
+    return Objects.hash(concertHall, eventCode, time, isPromo, stadiumSector, maxBackpackWeight,
+            price, createdAt, startDate, ticketType);
   }
 
   @Override
   public String toString() {
-    return "main.entity.Ticket{" +
+    return "Ticket{" +
             "concertHall='" + concertHall + '\'' +
             ", eventCode=" + eventCode +
             ", time=" + time +
