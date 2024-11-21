@@ -1,9 +1,9 @@
 package main.entity;
 
 import main.entity.abstracts.AbstractTicket;
+import main.util.NullableFieldValidator;
 import main.util.NullableWarning;
 
-import java.lang.reflect.Field;
 import java.util.Objects;
 
 public class Ticket extends AbstractTicket {
@@ -18,49 +18,30 @@ public class Ticket extends AbstractTicket {
   private double price;
   private long createdAt;
 
-
-
   public Ticket(int ticketID, String hall, int code, long eventTime, boolean promoStatus,
                 char sector, double backpackWeight, double ticketPrice) {
     setId(ticketID);
-    concertHall = hall;
-    eventCode = code;
-    time = eventTime;
-    isPromo = promoStatus;
-    stadiumSector = sector;
-    maxBackpackWeight = backpackWeight;
-    price = ticketPrice;
-    createdAt = System.currentTimeMillis();
-    checkNullableFields();
+    this.concertHall = hall;
+    this.eventCode = code;
+    this.time = eventTime;
+    this.isPromo = promoStatus;
+    this.stadiumSector = sector;
+    this.maxBackpackWeight = backpackWeight;
+    this.price = ticketPrice;
+    this.createdAt = System.currentTimeMillis();
+    NullableFieldValidator.checkNullableFields(this); // Use the validator
   }
 
   public Ticket(String hall, int code, long eventTime) {
-    concertHall = hall;
-    eventCode = code;
-    time = eventTime;
-    createdAt = System.currentTimeMillis();
-    isPromo = false;
-    stadiumSector = 'A';
-    maxBackpackWeight = 0.0;
-    price = 0.0;
-    checkNullableFields();
-  }
-
-
-  private void checkNullableFields() {
-    for (Field field : this.getClass().getDeclaredFields()) {
-      if (field.isAnnotationPresent(NullableWarning.class)) {
-        try {
-          field.setAccessible(true);
-          Object value = field.get(this);
-          if (value == null) {
-            throw new RuntimeException("VARIABLE IS NULL");
-          }
-        } catch (IllegalAccessException e) {
-          e.printStackTrace();
-        }
-      }
-    }
+    this.concertHall = hall;
+    this.eventCode = code;
+    this.time = eventTime;
+    this.createdAt = System.currentTimeMillis();
+    this.isPromo = false;
+    this.stadiumSector = 'A';
+    this.maxBackpackWeight = 0.0;
+    this.price = 0.0;
+    NullableFieldValidator.checkNullableFields(this); // Use the validator
   }
 
   public void setTime(long time) {
