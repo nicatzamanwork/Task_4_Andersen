@@ -1,7 +1,7 @@
 package main.service.abstracts;
 
 import main.entity.User;
-
+//sdfsdf
 public abstract class AbstractUser {
 
    protected Role role;
