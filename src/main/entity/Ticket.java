@@ -1,10 +1,13 @@
 package main.entity;
 
 import main.entity.abstracts.AbstractTicket;
+import main.enums.TicketType;
 import main.util.NullableFieldValidator;
 import main.util.NullableWarning;
 
 import java.util.Objects;
+
+import static main.enums.TicketType.MONTH;
 
 public class Ticket extends AbstractTicket {
 
@@ -18,7 +21,7 @@ public class Ticket extends AbstractTicket {
   private double price;
   private long createdAt;
   private String startDate;
-  private String ticketType;
+  private TicketType ticketType;
 
   public Ticket(int ticketID, String hall, int code, long eventTime, boolean promoStatus,
                 char sector, double backpackWeight, double ticketPrice) {
@@ -34,7 +37,7 @@ public class Ticket extends AbstractTicket {
     NullableFieldValidator.validate(this);
   }
 
-  public Ticket(String hall, String ticketType, String startDate, double ticketPrice) {
+  public Ticket(String hall, TicketType ticketType, String startDate, double ticketPrice) {
     this.concertHall = hall;
     this.ticketType = ticketType;
     this.startDate = startDate;
@@ -52,7 +55,7 @@ public class Ticket extends AbstractTicket {
     this.stadiumSector = 'A';
     this.maxBackpackWeight = 0.0;
     this.price = 0.0;
-    this.ticketType = "MONTH";
+    this.ticketType = MONTH;
     this.startDate = "";
     NullableFieldValidator.validate(this); // Call the utility class
   }
@@ -61,7 +64,7 @@ public class Ticket extends AbstractTicket {
     return startDate;
   }
 
-  public String getTicketType() {
+  public TicketType getTicketType() {
     return ticketType;
   }
 

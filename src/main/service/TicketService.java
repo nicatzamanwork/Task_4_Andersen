@@ -1,6 +1,7 @@
 package main.service;
 
 import main.entity.Ticket;
+import main.enums.TicketType;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,16 +17,12 @@ public class TicketService {
     private static final String PRICE = "price";
     private static final String TICKET_TYPE = "ticketType";
 
-    private enum TicketType {
-        DAY, WEEK, MONTH, YEAR;
-
-        public static boolean isValidType(String type) {
-            try {
-                TicketType.valueOf(type);
-                return true;
-            } catch (IllegalArgumentException e) {
-                return false;
-            }
+    public static boolean isValidType(TicketType type) {
+        try {
+            TicketType.valueOf(type.name());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 
@@ -47,8 +44,9 @@ public class TicketService {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
+                TicketType ticketType = TicketType.valueOf(parts[1].trim().toUpperCase());
                 if (parts.length == 4) {
-                    tickets.add(new Ticket(parts[0].trim(), parts[1].trim(), parts[2].trim(), Double.parseDouble(parts[3].trim())));
+                    tickets.add(new Ticket(parts[0].trim(), ticketType, parts[2].trim(), Double.parseDouble(parts[3].trim())));
                 }
             }
         } catch (IOException e) {
@@ -87,7 +85,7 @@ public class TicketService {
         boolean isValid = true;
         List<String> violations = new ArrayList<>();
 
-        if (!TicketType.isValidType(ticket.getTicketType())) {
+        if (!isValidType(ticket.getTicketType())) {
             isValid = false;
             violations.add(TICKET_TYPE);
             incrementViolationCount(violationCounts, TICKET_TYPE);
